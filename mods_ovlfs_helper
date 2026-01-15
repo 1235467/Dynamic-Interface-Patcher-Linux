@@ -26,14 +26,15 @@ while IFS= read -r line; do
 done < "$MODLIST"
 echo "找到 ${#enabled_mods[@]} 个启用的 mod"
 
-# 反转数组顺序（MO2 下面的优先级高 -> OverlayFS 左边的优先级高）
+# 保持数组顺序（modlist 上面的优先级高 -> OverlayFS 左边的优先级高）
 LOWER_DIRS=""
-for ((i=${#enabled_mods[@]}-1; i>=0; i--)); do
-    LOWER_DIRS="${LOWER_DIRS}${MODS_DIR}/${enabled_mods[i]}:"
+for mod in "${enabled_mods[@]}"; do
+    LOWER_DIRS="${LOWER_DIRS}${MODS_DIR}/${mod}:"
 done
 
 # 添加基础游戏数据（最低优先级）
 LOWER_DIRS="${LOWER_DIRS}${BASE_DIR}"
 
 echo "构建的 lowerdir (前 200 字符):"
-echo "${LOWER_DIRS}..."
+echo "${LOWER_DIRS}"
+fuse-overlayfs -o "lowerdir=$LOWER_DIRS,upperdir=overwrite/,workdir=tmp/" merged_data/

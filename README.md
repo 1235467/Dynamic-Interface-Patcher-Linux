@@ -1,71 +1,51 @@
-<p align="center">
-<img src="https://i.imgur.com/Tl3rkTE.png" width="500px" />
-<br>
-<a href="https://www.nexusmods.com/skyrimspecialedition/mods/96891"><img src="https://i.imgur.com/STsBXT6.png" height="60px"/> </a>
-<a href="https://ko-fi.com/cutleast"><img src="https://i.imgur.com/KcPrhK5.png" height="60px"/> </a>
-<br>
+# Linux Usage
 
-# Please Note!!!
+## Prerequisites
 
-**I take no responsibility for any problems that may occur or any assets that get redistributed without permission!**
+1. Install required dependencies:
+   - pixi
+   - xdelta3
+   - fuse-overlayfs (certainly you can use overlayfs if your filesystem supports it.)
 
-# Description
+2. Install Python dependencies using pixi or pip:
+   ```bash
+   pixi shell
+   ```
 
-This is a dynamic patching tool for ui mods with strict permissions like RaceMenu or MiniMap.
-**No assets or files by the original mod authors get redistributed! Patching takes place exclusively locally and redistribution of the patched files is strictly prohibited according to the respective permissions.**
-The tool requires a compatible patch to work. Those can be found on the Skyrim nexus on Nexus Mods by searching for something like "DIP Patch".
-More info on creating patches can be found in the [documentation](./DOCUMENTATION.md).
+## Setup Steps
 
-# Features
+### 1. Mount OverlayFS
 
-- Fully automated patching
-- Automatic extraction of BSA
-- Can be installed as a mod in MO2 or Vortex
-- Commandline arguments for auto patching
+The application requires an OverlayFS to merge your mo2 files with the base game data. Use the provided `mods_ovlfs_helper` script:
 
-# Official Patches
+1. Edit `mods_ovlfs_helper` to configure your paths:
+   - `MODS_DIR`: Path to your MO2 mods directory
+   - `BASE_DIR`: Path to your Skyrim Data directory
+   - `MODLIST`: Path to your MO2 profile's modlist.txt
 
-See [here](./OfficialPatches.md) for a list of released and planned patches.
+2. Create required directories:
+   ```bash
+   mkdir -p overwrite tmp merged_data
+   ```
 
-# Contributing
+3. Run the helper script to mount the OverlayFS:
+   ```bash
+   ./mods_ovlfs_helper
+   ```
+### 2. Run the Application
 
-## Feedback (Suggestions/Issues)
+Use the provided `start.sh` script as a reference:
 
-If you encountered an issue/error or you have a suggestion, create an issue under the "Issues" tab above.
+```bash
+cd /path/to/your/overlayfs
+python /path/to/Dynamic-Interface-Patcher/src/main.py
+```
+### 3. Configure Paths in the Application
 
-## Code contributions
+When using the application:
+- **Patch Path**: Select the path to your DIP patch folder which has a patch subfolder (e.g., `/path/to/MO2/mods/Edge UI - RaceMenu DIP Patch/Edge UI - RaceMenu - DIP/`)
+- **Original Mod Path**: Select the path to your OverlayFS merged data (e.g., `/path/to/merged_data`)
 
-### 1. Install requirements
+### 4. Output Location
 
-1. Install [Python 3.12+](https://www.python.org/downloads/) (Make sure that you add it to PATH!)
-2. Install [uv](https://github.com/astral-sh/uv#installation)
-3. Clone repository
-4. Open a terminal in the cloned repository folder
-5. Run the following command to init your local environment and to install all dependencies
-   `uv sync`
-
-### 2. Execute from source
-
-1. Open a terminal in the root folder of this repo
-2. Execute main file with uv
-   `uv run src\main.py`
-
-### 3. Compile and build executable
-
-1. Run `build.bat` from the root folder of this repo.
-2. The executable and all dependencies are built in the `dist/DIP`-Folder and get packed in a `dist/Dynamic Interface Patcher v[version].7z`.
-
-# How it works
-
-1. Copy original mod to a temp folder. (Extract BSAs if required)
-2. Patch shapes.
-3. Convert SWFs to XMLs.
-4. Patch XMLs.
-5. Convert XMLs back to SWFs.
-6. Copy patched mod back to current directory.
-
-# Credits
-
-- Qt by The [Qt Company Ltd](https://qt.io)
-- [bethesda-structs](https://github.com/stephen-bunn/bethesda-structs) by [Stephen Bunn](https://github.com/stephen-bunn)
-- [FFDec](https://github.com/jindrapetrik/jpexs-decompiler) by [Jindra Petřík](https://github.com/jindrapetrik)
+The patched files will be generated in the parent directory of your working directory. You can then move these files to your mod manager for installation.
