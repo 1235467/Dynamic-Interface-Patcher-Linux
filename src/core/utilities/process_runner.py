@@ -23,7 +23,6 @@ def run_process(command: list[str]) -> None:
 
     with subprocess.Popen(
         command,
-        shell=True,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

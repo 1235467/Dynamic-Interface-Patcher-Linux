@@ -7,12 +7,19 @@ import sys
 from traceback import format_exception
 from types import TracebackType
 from typing import Callable
-from winsound import MessageBeep as alert
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication
 
 from ui.widgets.error_dialog import ErrorDialog
+
+# Platform-specific imports
+if sys.platform == "win32":
+    from winsound import MessageBeep as alert
+else:
+    # No-op alert function for non-Windows platforms
+    def alert():
+        pass
 
 
 class ExceptionHandler(QObject):

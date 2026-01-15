@@ -1,0 +1,5 @@
+app
+core
+main
+resources_rc
+ui

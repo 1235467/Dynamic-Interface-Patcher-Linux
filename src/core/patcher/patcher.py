@@ -143,7 +143,34 @@ class Patcher:
 
             elif is_file(bsa_file):
                 bsa_archive = BSAArchive(bsa_file)
-                bsa_archive.extract_file(mod_file, temp_folder / bsa_file.name)
+                # BSA files may use mixed path separators (backslash for dirs, forward slash before filename)
+                # Find the exact path as stored in the BSA
+                mod_file_str = str(mod_file)
+                bsa_internal_path = None
+                for bsa_file_path in bsa_archive.files:
+                    # Compare paths case-insensitively and with normalized separators
+                    if str(bsa_file_path).replace('\\', '/').lower() == mod_file_str.replace('\\', '/').lower():
+                        bsa_internal_path = str(bsa_file_path)
+                        break
+
+                if bsa_internal_path is None:
+                    raise FileNotFoundError(f"'{mod_file}' not found in BSA archive '{bsa_file}'")
+
+                extract_dest = temp_folder / bsa_file.name
+                bsa_archive.extract_file(bsa_internal_path, extract_dest)
+
+                # The sse_bsa library may create paths with backslashes on Linux
+                # We need to normalize the extracted file path
+                extracted_file_with_backslash = extract_dest / bsa_internal_path
+                normalized_file = extract_dest / mod_file
+
+                if extracted_file_with_backslash != normalized_file and extracted_file_with_backslash.exists():
+                    # Move the file from the backslash path to the normalized path
+                    import shutil
+                    # Ensure parent directory exists
+                    normalized_file.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(extracted_file_with_backslash), str(normalized_file))
+
                 self.log.debug(
                     f"Extracted '{bsa_file / mod_file}' -> "
                     f"'{temp_folder / bsa_file.name / mod_file}'."

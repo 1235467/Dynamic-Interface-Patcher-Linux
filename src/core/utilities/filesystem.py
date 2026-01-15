@@ -88,6 +88,11 @@ def mkdir(path: Path) -> None:
     """
 
     if not is_dir(path) and not is_file(path):
-        run_process(["mkdir", str(path).replace("/", "\\")])
+        import sys
+        if sys.platform == "win32":
+            run_process(["mkdir", str(path).replace("/", "\\")])
+        else:
+            # On Linux, use mkdir -p to create parent directories
+            run_process(["mkdir", "-p", str(path)])
     elif is_file(path):
         raise FileExistsError(f"{str(path)!r} already exists!")

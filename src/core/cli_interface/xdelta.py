@@ -4,6 +4,7 @@ Copyright (c) Cutleast
 
 import logging
 import os
+import sys
 from pathlib import Path
 
 from core.utilities.exe_info import get_current_path
@@ -16,7 +17,13 @@ class XDeltaInterface:
     """
 
     log: logging.Logger = logging.getLogger("xdelta")
-    bin_path: Path = get_current_path() / "xdelta" / "xdelta.exe"
+
+    # Use platform-appropriate xdelta binary
+    if sys.platform == "win32":
+        bin_path: Path = get_current_path() / "xdelta" / "xdelta.exe"
+    else:
+        # On Linux, use system xdelta3
+        bin_path: Path = Path("xdelta3")
 
     def patch_file(self, original_file_path: Path, xdelta_file_path: Path):
         self.log.info(f"Patching {original_file_path.name!r} with xdelta...")

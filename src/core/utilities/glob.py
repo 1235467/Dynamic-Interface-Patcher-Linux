@@ -7,25 +7,28 @@ See this issue for more information:
 """
 
 import ctypes
+import sys
 from pathlib import Path
 
-lib = ctypes.CDLL("./glob.dll")
+# Only load the DLL on Windows
+if sys.platform == "win32":
+    lib = ctypes.CDLL("./glob.dll")
 
-ENCODING: str = "cp1252"
-"""
-The encoding used by the underlying C++ code.
-"""
+    ENCODING: str = "cp1252"
+    """
+    The encoding used by the underlying C++ code.
+    """
 
-# Define function signatures
-lib.glob_cpp.argtypes = [
-    ctypes.POINTER(ctypes.c_char),
-    ctypes.POINTER(ctypes.c_char),
-    ctypes.c_bool,
-    ctypes.POINTER(ctypes.c_size_t),
-]
-lib.glob_cpp.restype = ctypes.POINTER(ctypes.c_char_p)
-lib.glob_clear.argtypes = []
-lib.glob_clear.restype = None
+    # Define function signatures
+    lib.glob_cpp.argtypes = [
+        ctypes.POINTER(ctypes.c_char),
+        ctypes.POINTER(ctypes.c_char),
+        ctypes.c_bool,
+        ctypes.POINTER(ctypes.c_size_t),
+    ]
+    lib.glob_cpp.restype = ctypes.POINTER(ctypes.c_char_p)
+    lib.glob_clear.argtypes = []
+    lib.glob_clear.restype = None
 
 
 def glob(path: Path, pattern: str, recursive: bool = True) -> list[Path]:
@@ -41,6 +44,17 @@ def glob(path: Path, pattern: str, recursive: bool = True) -> list[Path]:
     Returns:
         list[str]: List of matching filenames
     """
+
+    # On non-Windows platforms, use Python's built-in glob
+    if sys.platform != "win32":
+        import glob as builtin_glob
+
+        search_pattern = str(path / pattern)
+        if recursive:
+            search_pattern = str(path / "**" / pattern)
+
+        results = [Path(p) for p in builtin_glob.glob(search_pattern, recursive=recursive)]
+        return results
 
     count = ctypes.c_size_t()
 

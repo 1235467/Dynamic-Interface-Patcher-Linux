@@ -1,0 +1,10 @@
+jstyleson
+lz4
+py7zr
+pydantic
+pyside6
+qtawesome
+qtpy
+rarfile
+sse-bsa
+virtual-glob
