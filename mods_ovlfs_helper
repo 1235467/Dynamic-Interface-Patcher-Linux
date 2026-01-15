@@ -1,0 +1,39 @@
+#!/bin/bash
+MODS_DIR="MO2/mods"
+BASE_DIR="Skyrim/Data"
+MODLIST="MO2/profiles/Default/modlist.txt"
+
+# 读取启用的 mod（+ 开头），存入数组
+enabled_mods=()
+while IFS= read -r line; do
+    # 去除 Windows 的回车符 \r
+    line="${line//$'\r'/}"
+
+    # 只处理 + 开头的行
+    if [[ "$line" == +* ]]; then
+        mod_name="${line:1}"  # 去掉开头的 +
+        
+        # 调试输出（可选，如果还不行把这行取消注释来看看究竟路径变成了什么）
+        # echo "检查路径: '$MODS_DIR/$mod_name'"
+
+        # 检查文件夹是否存在
+        if [ -d "$MODS_DIR/$mod_name" ]; then
+            enabled_mods+=("$mod_name")
+        else
+            echo "警告: 找不到 mod 文件夹: $MODS_DIR/$mod_name" >&2
+        fi
+    fi
+done < "$MODLIST"
+echo "找到 ${#enabled_mods[@]} 个启用的 mod"
+
+# 反转数组顺序（MO2 下面的优先级高 -> OverlayFS 左边的优先级高）
+LOWER_DIRS=""
+for ((i=${#enabled_mods[@]}-1; i>=0; i--)); do
+    LOWER_DIRS="${LOWER_DIRS}${MODS_DIR}/${enabled_mods[i]}:"
+done
+
+# 添加基础游戏数据（最低优先级）
+LOWER_DIRS="${LOWER_DIRS}${BASE_DIR}"
+
+echo "构建的 lowerdir (前 200 字符):"
+echo "${LOWER_DIRS}..."
